@@ -74,6 +74,65 @@ medianas_distance = {
     "Valle de Trapaga-Trapagaran": 9407.0, "Zalla": 16758.0
 }
 
+# --- DICCIONARIOS DE CODIFICACIÓN EN TARGET ENCODING GEOGRÁFICO ---
+target_muni = {
+    "Amorebieta-Echano": 12.7575, "Astrabudua": 12.5144, "Barakaldo": 12.5300, "Basauri": 12.5741, "Berango": 13.5906,
+    "Bilbao": 12.8114, "Erandio": 12.7052, "Galdakao": 12.6368, "Getxo": 13.4333, "Leioa": 13.0733,
+    "Mungia": 13.2278, "Muskiz": 12.6844, "Ortuella": 12.5107, "Plentzia": 13.3567, "Portugalete": 12.4843,
+    "Santurtzi": 12.4982, "Sestao": 12.1967, "Sopelana": 13.1736, "Valle de Trapaga-Trapagaran": 12.6008, "Zalla": 12.6923
+}
+
+target_dist = {
+    "Amorebieta-Echano": 12.7575, "Astrabudua": 12.5144, "Arteagabeitia - Retuerto - Kareaga": 12.5262,
+    "Bagatza - S. Vicente": 12.5128, "Burtzeña": 12.7624, "Centro": 12.5324, "Cruces": 12.5419,
+    "Gorostiza - El Regato": 12.6497, "Lasesarre": 12.5610, "Lutxana - Llano": 12.5222, "Rontegui-Pormetxeta": 12.6522,
+    "Centro - Ariz - Uribarri": 12.5744, "Kalero - Basozelai": 12.6320, "Pozokoetxe": 12.7589, "San Miguel": 12.8766,
+    "Urbi": 12.7582, "Berango": 13.5906, "Abando - Albia": 13.3447, "Basurto - Zorroza": 12.6991,
+    "Begoña - Santutxu": 12.4886, "Casco Viejo": 12.6563, "Deusto": 12.8880, "Ibaiondo": 12.4429,
+    "Indautxu": 13.2667, "Otxarkoaga - Txurdinaga": 12.5998, "Rekalde": 12.6835, "San Adrián - La Peña": 12.6885,
+    "San Ignacio": 12.8584, "Uribarri": 12.7551, "Erandio": 12.7052, "Galdakao": 12.6368, "Algorta": 13.2005,
+    "Las Arenas": 13.4493, "Neguri": 13.5566, "Sta. María de Getxo": 13.6219, "Aldekoena-Artatzagana-Sarriena": 12.8565,
+    "Artatza-Pinueta-Pinosolo": 13.1395, "Centro Urbano-Hirigunea": 12.8427, "Lamiako-Txopoeta": 12.8079,
+    "Negurigane-Peruri": 13.0627, "Txorierri-Ondiz-Udondo": 12.8317, "Mungia": 13.2278, "Muskiz": 12.6844,
+    "Ortuella": 12.5107, "Plentzia": 13.3567, "Azeta - Abatxolo": 12.4711, "Buenavista": 12.6247,
+    "Casco Viejo - Muelle": 12.7163, "Centro": 12.5324, "La Florida": 12.6958, "Repelaga": 12.8433,
+    "Capitán Mendizabal - La Sardinera": 12.7631, "Kabiezes": 12.7143, "La Magdalena": 12.8809,
+    "La Txitxarra - Murrieta - Parke Santurtzi": 12.7914, "Larrea - San Juan de Dios - Peñota": 12.8668,
+    "Las Viñas": 12.4469, "Mamariga": 12.6506, "Villar - San Juan": 12.5527, "Zona Centro": 12.7457,
+    "Asilo - Rebonza - Urbinaga": 12.6622, "Centro - Albiz - Markonzaga": 12.4799, "La Paz - El Carmen - Anunciación": 12.6718,
+    "La Unión - Vista Alegre": 12.1639, "Sopelana": 13.1736, "Valle de Trapaga-Trapagaran": 12.6008, "Zalla": 12.6923
+}
+
+target_neigh = {
+    "Amorebieta-Echano": 12.7575, "Astrabudua": 12.5144, "Arteagabeitia - Retuerto - Kareaga": 12.5262,
+    "Bagatza - S. Vicente": 12.5128, "Burtzeña": 12.7624, "Centro": 12.7050, "Cruces": 12.5419,
+    "Gorostiza - El Regato": 12.6497, "Lasesarre": 12.5610, "Lutxana - Llano": 12.5222, "Rontegui-Pormetxeta": 12.6522,
+    "Centro - Ariz - Uribarri": 12.5744, "Kalero - Basozelai": 12.6320, "Pozokoetxe": 12.7589, "San Miguel": 12.8766,
+    "Urbi": 12.7582, "Berango": 13.5906, "Abandoibarra-Guggenheim": 13.4713, "Albia": 13.1780,
+    "Ensanche-Moyua": 13.6220, "Plaza Circular": 13.1027, "Zabalburu-Diputación": 12.9848, "Altamira": 12.7787,
+    "Basurtu": 13.0649, "Masustegui": 12.6580, "Olabeaga": 12.7478, "Zorrotza": 12.4962, "Begoña": 12.8294,
+    "Bolueta": 12.6027, "Santutxu": 12.4563, "Casco Viejo": 12.6563, "Arangoiti": 12.7386, "La Ribera-Ibarrekolanda": 12.7976,
+    "San Pedro de Deusto": 13.0273, "Atxuri": 12.5777, "Bilbao la Vieja": 12.6238, "Iturralde": 12.7229,
+    "Miribilla": 12.8301, "San Francisco": 12.3544, "Solokoetxe": 12.6053, "Zabala": 12.4703, "Alhondiga": 12.9024,
+    "Campuzano": 13.0100, "Sabino Arana-Jesuitas": 13.2693, "Zona Indautxu": 13.2018, "Otxarkoaga - Txurdinaga": 12.5998,
+    "Ametzola": 12.8970, "Artatzu-Larraskitu": 12.7797, "Irala": 12.5944, "Rekalde Centro": 12.5708,
+    "Uretamendi-Betolaza-Peñaskal": 12.6508, "La Peña": 12.6831, "San Adrián": 12.8289, "San Ignacio": 12.8584,
+    "Arabella": 12.7327, "Campo Volantín-Castaños": 12.9635, "Ciudad Jardín": 12.9001, "Mirador de Bilbao-Maurice Ravel": 12.7122,
+    "Uribarri": 12.6049, "Zurbaran": 12.8389, "Erandio": 12.7052, "Galdakao": 12.6368, "Alango": 12.8405,
+    "Centro": 12.7050, "Polígono Rojo-Aldapa": 12.8724, "Portu Zaharra": 12.8906, "Sarrikobaso": 12.8231,
+    "Villamonte": 12.8739, "Zona Usategui - Trinitarios": 13.2469, "Las Arenas Centro": 13.6182, "Muelle de las Arenas": 13.1280,
+    "Romo": 12.8325, "Santa Ana": 12.9158, "Villa Plentzia": 12.9822, "Neguri": 13.5566, "Sta. María de Getxo": 13.6219,
+    "Aldekoena-Artatzagana-Sarriena": 12.8565, "Artatza-Pinueta-Pinosolo": 13.1395, "Centro Urbano-Hirigunea": 12.8427,
+    "Lamiako-Txopoeta": 12.8079, "Negurigane-Peruri": 13.0627, "Txorierri-Ondiz-Udondo": 12.8317, "Mungia": 13.2278,
+    "Muskiz": 12.6844, "Ortuella": 12.5107, "Plentzia": 13.3567, "Azeta - Abatxolo": 12.4711, "Buenavista": 12.6247,
+    "Casco Viejo - Muelle": 12.7163, "Centro": 12.7050, "La Florida": 12.6958, "Repelaga": 12.8433,
+    "Capitán Mendizabal - La Sardinera": 12.7631, "Kabiezes": 12.7143, "La Magdalena": 12.8809,
+    "La Txitxarra - Murrieta - Parke Santurtzi": 12.7914, "Larrea - San Juan de Dios - Peñota": 12.8668,
+    "Las Viñas": 12.4469, "Mamariga": 12.6506, "Villar - San Juan": 12.5527, "Zona Centro": 12.7457,
+    "Asilo - Rebonza - Urbinaga": 12.6622, "Centro - Albiz - Markonzaga": 12.4799, "La Paz - El Carmen - Anunciación": 12.6718,
+    "La Unión - Vista Alegre": 12.1639, "Sopelana": 13.1736, "Valle de Trapaga-Trapagaran": 12.6008, "Zalla": 12.6923
+}
+
 # --- 1. FORMULARIO DE ENTRADA MANUAL DE DATOS ---
 with st.form("formulario_tasacion"):
     col1, col2 = st.columns(2)
@@ -81,7 +140,7 @@ with st.form("formulario_tasacion"):
     with col1:
         property_type = st.selectbox("Tipología del inmueble", ["flat", "chalet", "duplex", "countryHouse", "penthouse"])
         
-        # Lógica condicional estricta para 'subTypology'
+        # Lógica condicional estricta para subTypology
         if property_type == "flat":
             sub_typology = "flat"
             st.text_input("Subtipología asignada automáticamente", value="flat", disabled=True)
@@ -97,7 +156,7 @@ with st.form("formulario_tasacion"):
         elif property_type == "chalet":
             sub_typology = st.selectbox("Subtipología de chalet", ["terracedHouse", "independantHouse", "semidetachedHouse"])
 
-        # Selector de municipio
+        # Selector de Municipio
         municipio_opciones = ["Bilbao", "Barakaldo", "Getxo", "Portugalete", "Santurtzi", "Sestao", "Leioa", "Basauri", "Mungia", "Plentzia", "Berango", "Amorebieta-Echano", "Galdakao", "Ortuella", "Sopelana", "Valle de Trapaga-Trapagaran", "Astrabudua", "Erandio", "Zalla", "Muskiz"]
         municipality = st.selectbox("Municipio", municipio_opciones)
 
@@ -220,6 +279,11 @@ if botón_tasar:
             num_photos_default = medianas_photos.get(neighborhood, 22.0)
             distance_default = medianas_distance.get(neighborhood, 1500.0)
 
+            # --- TRADUCCIÓN INVISIBLE DE TEXTOS A SUS RESPECTIVOS CÓDIGOS TARGET ENCODING ---
+            muni_encoded = target_muni.get(municipality, 12.8114)
+            dist_encoded = target_dist.get(district, 12.5324)
+            neigh_encoded = target_neigh.get(neighborhood, 12.7050)
+
             # --- RECONSTRUCCIÓN DEL VECTOR DE 43 COLUMNAS DEL MODELO (ONE-HOT ENCODING MANUAL) ---
             registro_modelo = {
                 'numPhotos': int(num_photos_default),
@@ -236,10 +300,10 @@ if botón_tasar:
                 'rooms': int(rooms),
                 'bathrooms': int(bathrooms),
                 
-                # Identificadores categóricos nativos del Pipeline
-                'municipality': municipality,
-                'district': district,
-                'neighborhood': neighborhood,
+                # Enviamos las codificaciones numéricas
+                'municipality': float(muni_encoded),
+                'district': float(dist_encoded),
+                'neighborhood': float(neigh_encoded),
                 
                 'showAddress': 0, # Fijo en False (0)
                 'distance': int(distance_default),
@@ -250,13 +314,14 @@ if botón_tasar:
                 'status_good': 1 if status == "good" else 0,
                 'status_renew': 1 if status == "renew" else 0,
                 
+                'newDevelopment': 1 if status == "newdevelopment" else 0,
                 'hasLift': int(has_lift_int),
                 'hasPlan': 0,
                 'has3DTour': 0,
                 'has360': 0,
                 'hasStaging': 0,
                 
-                # 'highlight' encoding (Fijo en Standar)
+                # 'highlight' encoding (Fijo en standar)
                 'highlight_Standar': 1,
                 'highlight_Destacado': 0,
                 'highlight_Top': 0,
@@ -280,11 +345,11 @@ if botón_tasar:
                 'hasLift_estimated': 0,
                 'exterior_estimated': 0,
                 
-                # Uso exacto de np.log1p para la escala logarítmica
+                # Ingeniería de variables exacta aplicando np.log1p
                 'size_log': float(np.log1p(size))
             }
 
-            # Conversión a DataFrame plano
+            # Conversión a dataFrame plano
             df_entrada = pd.DataFrame([registro_modelo])
 
             # --- NIVEL 0: Predicciones preliminares logarítmicas ---
@@ -295,12 +360,12 @@ if botón_tasar:
 
             # --- NIVEL 1: Enrutamiento Asimétrico Dinámico ---
             if property_type != 'chalet':
-                # Mercado Urbano General
+                # Mercado urbano general
                 df_meta = pd.DataFrame({'ElasticNet': pred_lin, 'LightGBM': pred_lgb, 'XGBoost': pred_xgb})
                 precio_log = meta_urb.predict(df_meta)[0]
                 ecosistema_texto = "Ecosistema urbano general (Pisos / Áticos / Dúplex)"
             else:
-                # Mercado Residencial Premium
+                # Mercado residencial premium
                 df_meta = pd.DataFrame({'ElasticNet': pred_lin, 'RandomForest': pred_rf, 'LightGBM': pred_lgb})
                 precio_log = meta_prem.predict(df_meta)[0]
                 ecosistema_texto = "Ecosistema residencial premium (Chalets)"
@@ -316,7 +381,7 @@ if botón_tasar:
             # Cuadro informativo metodológico
             st.info(f"**Ruta de enrutamiento activada:** {ecosistema_texto}\n\n"
                     f"**Coeficiente de confianza del modelo (R²):** 92,06%\n\n"
-                    f"**Margen de Error Relativo (MAPE promedio en pisos):** 10,17%")
+                    f"**Margen de Error Relativo (MAPE promedio en pisos):** 10,42%")
         
         except Exception as e:
             st.error(f"Error al procesar la predicción. Detalle técnico: {e}")
