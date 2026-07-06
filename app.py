@@ -315,7 +315,7 @@ if botón_tasar:
             
             # Cuadro informativo metodológico
             st.info(f"**Ruta de enrutamiento activada:** {ecosistema_texto}\n\n"
-                    f"**Coeficiente de confianza del modelo (R²):** 92,26%\n\n"
+                    f"**Coeficiente de confianza del modelo (R²):** 92,06%\n\n"
                     f"**Margen de Error Relativo (MAPE promedio en pisos):** 10,17%")
         
         except Exception as e:
