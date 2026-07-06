@@ -15,7 +15,7 @@ st.markdown("---")
 medianas_photos = {
     "Amorebieta-Echano": 15.0, "Astrabudua": 19.0, "Arteagabeitia - Retuerto - Kareaga": 23.0,
     "Bagatza - S. Vicente": 28.0, "Burtzeña": 24.0, "Centro": 22.0, "Cruces": 27.0,
-    "Gorrostiza - El Regato": 8.0, "Lasesarre": 27.0, "Lutxana - Llano": 28.0, "Rontegui-Pormetxeta": 21.0,
+    "Gorostiza - El Regato": 8.0, "Lasesarre": 27.0, "Lutxana - Llano": 28.0, "Rontegui-Pormetxeta": 21.0,
     "Centro - Ariz - Uribarri": 25.0, "Kalero - Basozelai": 22.0, "Pozokoetxe": 23.0, "San Miguel": 50.0,
     "Urbi": 0.0, "Berango": 30.0, "Ensanche-Moyua": 23.0, "Zabalburu-Diputación": 26.0,
     "Plaza Circular": 31.0, "Abandoibarra-Guggenheim": 26.0, "Albia": 33.0, "Zorrotza": 15.0,
@@ -165,7 +165,7 @@ with st.form("formulario_tasacion"):
             "Amorebieta-Echano": ["Amorebieta-Echano"], "Astrabudua": ["Astrabudua"],
             "Barakaldo": ["Centro", "Rontegui-Pormetxeta", "Bagatza - S. Vicente", "Cruces", "Burtzeña", "Lasesarre", "Lutxana - Llano", "Arteagabeitia - Retuerto - Kareaga", "Gorostiza - El Regato"],
             "Basauri": ["San Miguel", "Kalero - Basozelai", "Centro - Ariz - Uribarri", "Pozokoetxe", "Urbi"], "Berango": ["Berango"],
-            "Bilbao": ["Rekalde", "Ibaiondo", "Deusto", "Abando - Albia", "Indautxu", "Basurto - Zorroza", "Uribarri", "Begoña - Santutxu", "Casco Viejo", "San Ignacio", "San Adrián - La Peña", "Otxarkoaga - Txurdinaga"],
+            "Bilbao": ["Rekalde", "IBAIONDO", "Deusto", "Abando - Albia", "Indautxu", "Basurto - Zorroza", "Uribarri", "Begoña - Santutxu", "Casco Viejo", "San Ignacio", "San Adrián - La Peña", "Otxarkoaga - Txurdinaga"],
             "Erandio": ["Erandio"], "Galdakao": ["Galdakao"], "Getxo": ["Neguri", "Las Arenas", "Sta. María de Getxo", "Algorta"],
             "Leioa": ["Artatza-Pinueta-Pinosolo", "Lamiako-Txopoeta", "Centro Urbano-Hirigunea", "Txorierri-Ondiz-Udondo", "Negurigane-Peruri", "Aldekoena-Artatzagana-Sarriena"],
             "Mungia": ["Mungia"], "Muskiz": ["Muskiz"], "Ortuella": ["Ortuella"], "Plentzia": ["Plentzia"],
@@ -284,7 +284,7 @@ if botón_tasar:
             dist_encoded = target_dist.get(district, 12.5324)
             neigh_encoded = target_neigh.get(neighborhood, 12.7050)
 
-            # --- RECONSTRUCCIÓN DEL VECTOR DE 43 COLUMNAS DEL MODELO (ONE-HOT ENCODING MANUAL) ---
+            # --- RECONSTRUCCIÓN DEL VECTOR DE COLUMNAS DEL MODELO (ONE-HOT ENCODING MANUAL) ---
             registro_modelo = {
                 'numPhotos': int(num_photos_default),
                 'floor': int(floor_final),
@@ -314,7 +314,6 @@ if botón_tasar:
                 'status_good': 1 if status == "good" else 0,
                 'status_renew': 1 if status == "renew" else 0,
                 
-                'newDevelopment': 1 if status == "newdevelopment" else 0,
                 'hasLift': int(has_lift_int),
                 'hasPlan': 0,
                 'has3DTour': 0,
@@ -349,8 +348,9 @@ if botón_tasar:
                 'size_log': float(np.log1p(size))
             }
 
-            # Conversión a dataFrame plano
-            df_entrada = pd.DataFrame([registro_modelo])
+            # 🛠️ BLINDAJE EN PRODUCCIÓN: Asegura el orden exacto de columnas que espera tu modelo entrenado
+            expected_features = list(p_lin.feature_names_in_)
+            df_entrada = pd.DataFrame([registro_modelo])[expected_features]
 
             # --- NIVEL 0: Predicciones preliminares logarítmicas ---
             pred_lin = p_lin.predict(df_entrada)
