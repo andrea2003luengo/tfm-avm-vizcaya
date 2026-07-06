@@ -139,7 +139,7 @@ col1, col2 = st.columns(2)
 with col1:
     property_type = st.selectbox("Tipología del inmueble", ["flat", "chalet", "duplex", "countryHouse", "penthouse"])
     
-    # Lógica condicional estricta para subTypology (Actualización inmediata)
+    # Lógica condicional estricta para 'subTypology' (actualización inmediata)
     if property_type == "flat":
         sub_typology = "flat"
         st.text_input("Subtipología asignada automáticamente", value="flat", disabled=True)
@@ -155,11 +155,11 @@ with col1:
     elif property_type == "chalet":
         sub_typology = st.selectbox("Subtipología de chalet", ["terracedHouse", "independantHouse", "semidetachedHouse"])
 
-    # Selector de Municipio
+    # Selector de municipio
     municipio_opciones = ["Bilbao", "Barakaldo", "Getxo", "Portugalete", "Santurtzi", "Sestao", "Leioa", "Basauri", "Mungia", "Plentzia", "Berango", "Amorebieta-Echano", "Galdakao", "Ortuella", "Sopelana", "Valle de Trapaga-Trapagaran", "Astrabudua", "Erandio", "Zalla", "Muskiz"]
     municipality = st.selectbox("Municipio", municipio_opciones)
 
-    # Mapeo condicional de distritos según el municipio (Actualización inmediata)
+    # Mapeo condicional de distritos según el municipio (actualización inmediata)
     distritos_por_muni = {
         "Amorebieta-Echano": ["Amorebieta-Echano"], "Astrabudua": ["Astrabudua"],
         "Barakaldo": ["Centro", "Rontegui-Pormetxeta", "Bagatza - S. Vicente", "Cruces", "Burtzeña", "Lasesarre", "Lutxana - Llano", "Arteagabeitia - Retuerto - Kareaga", "Gorostiza - El Regato"],
@@ -175,7 +175,7 @@ with col1:
     }
     district = st.selectbox("Distrito", distritos_por_muni[municipality])
 
-    # Mapeo condicional de barrios según el distrito (Actualización inmediata)
+    # Mapeo condicional de barrios según el distrito (actualización inmediata)
     barrios_por_distrito = {
         "Amorebieta-Echano": ["Amorebieta-Echano"], "Astrabudua": ["Astrabudua"],
         "Arteagabeitia - Retuerto - Kareaga": ["Arteagabeitia - Retuerto - Kareaga"], "Bagatza - S. Vicente": ["Bagatza - S. Vicente"],
@@ -209,7 +209,7 @@ with col1:
     }
     neighborhood = st.selectbox("Barrio específico", barrios_por_distrito[district])
 
-    # Rango de superficie útil (30 a 600 en pasos de 5)
+    # Rango de superficie útil
     size = st.number_input("Superficie útil (m²)", min_value=30, max_value=600, value=85, step=5)
     
     # Forzar 'Exterior' a True (1) en chalet y countryHouse
@@ -348,7 +348,7 @@ if botón_tasar:
                 'size_log': float(np.log1p(size))
             }
 
-            # 🛠️ BLINDAJE EN PRODUCCIÓN: Asegura el orden exacto de columnas que espera tu modelo entrenado
+            # Asegura el orden exacto de columnas que espera el modelo
             expected_features = list(p_lin.feature_names_in_)
             df_entrada = pd.DataFrame([registro_modelo])[expected_features]
 
@@ -358,12 +358,12 @@ if botón_tasar:
             pred_lgb = p_lgb.predict(df_entrada)
             pred_xgb = p_xgb.predict(df_entrada)
 
-            # --- NIVEL 1: Enrutamiento Asimétrico Dinámico ---
+            # --- NIVEL 1: Enrutamiento asimétrico dinámico ---
             if property_type != 'chalet':
                 # Mercado urbano general
                 df_meta = pd.DataFrame({'ElasticNet': pred_lin, 'LightGBM': pred_lgb, 'XGBoost': pred_xgb})
                 precio_log = meta_urb.predict(df_meta)[0]
-                ecosistema_texto = "Ecosistema urbano general (Pisos / Áticos / Dúplex)"
+                ecosistema_texto = "Ecosistema urbano general (Pisos / Áticos / Dúplex / Casas de campo)"
             else:
                 # Mercado residencial premium
                 df_meta = pd.DataFrame({'ElasticNet': pred_lin, 'RandomForest': pred_rf, 'LightGBM': pred_lgb})
@@ -378,10 +378,9 @@ if botón_tasar:
             precio_formateado = f"{precio_euros:,.2f} €".replace(',', 'X').replace('.', ',').replace('X', '.')
             st.success(f"**Tarifa estimada de tasación comercial:** {precio_formateado}")
             
-            # Cuadro informativo metodológico
+ 	    # Cuadro informativo metodológico
             st.info(f"**Ruta de enrutamiento activada:** {ecosistema_texto}\n\n"
-                    f"**Coeficiente de confianza del modelo (R²):** 92,06%\n\n"
-                    f"**Margen de Error Relativo (MAPE promedio en pisos):** 10,42%")
+                    f"**Coeficiente de confianza del modelo (R²):** 92,06%")
         
         except Exception as e:
             st.error(f"Error al procesar la predicción. Detalle técnico: {e}")
