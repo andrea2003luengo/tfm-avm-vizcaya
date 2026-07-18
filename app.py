@@ -3,15 +3,41 @@ import pandas as pd
 import numpy as np
 import joblib
 
-# Configuración inicial
-st.set_page_config(page_title="AVM Vizcaya - Stacking Híbrido", layout="centered")
+# Configuración inicial de la plataforma AVM
+st.set_page_config(
+    page_title="AVM Vizcaya - Stacking Híbrido Asimétrico", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
-# --- CABECERA VISUAL ---
+# --- CABECERA DE PRODUCCIÓN ---
 st.title("Sistema de Tasación Automatizada (AVM) - Vizcaya")
-st.write("Introduzca las características del inmueble para proyectar su valor comercial.")
+st.write("Ecosistema Predictivo de Inteligencia Inmobiliaria basado en un Ensamble de Stacking Asimétrico.")
 st.markdown("---")
 
-# --- DICCIONARIOS DE DATOS Y CODIFICACIÓN ---
+# --- CARGA DETERMINISTA DE ARTIFACTOS ---
+@st.cache_resource
+def cargar_pipeline_produccion():
+    """Carga de forma síncrona los modelos base, meta-modelos y codificadores."""
+    return {
+        "pipeline_lineal": joblib.load('pipeline_lineal.joblib'),
+        "pipeline_rf": joblib.load('pipeline_rf.joblib'),
+        "pipeline_lgb": joblib.load('pipeline_lgb.joblib'),
+        "pipeline_xgb": joblib.load('pipeline_xgb.joblib'),
+        "meta_urbano": joblib.load('meta_urbano.joblib'),
+        "meta_premium": joblib.load('meta_premium.joblib'),
+        "ohe_encoder": joblib.load('ohe.joblib'),
+        "te_encoder": joblib.load('te.joblib')
+    }
+
+try:
+    avm_hub = cargar_pipeline_produccion()
+except Exception as e:
+    st.error(f"Error crítico al inicializar los artefactos de Machine Learning: {e}")
+    st.stop()
+
+# --- INPUTS ESTADÍSTICOS DE PRODUCCIÓN ---
+# Los diccionarios de medias y modas se embeben directamente para garantizar el autocompletado
 medianas_photos = {
     "Amorebieta-Echano": 15.0, "Astrabudua": 19.0, "Arteagabeitia - Retuerto - Kareaga": 23.0,
     "Bagatza - S. Vicente": 28.0, "Burtzeña": 24.0, "Centro": 22.0, "Cruces": 27.0,
@@ -74,161 +100,112 @@ medianas_distance = {
     "Valle de Trapaga-Trapagaran": 9407.0, "Zalla": 16758.0
 }
 
-target_muni = {
-    "Amorebieta-Echano": 12.7575, "Astrabudua": 12.5144, "Barakaldo": 12.5300, "Basauri": 12.5741, "Berango": 13.5906,
-    "Bilbao": 12.8114, "Erandio": 12.7052, "Galdakao": 12.6368, "Getxo": 13.4333, "Leioa": 13.0733,
-    "Mungia": 13.2278, "Muskiz": 12.6844, "Ortuella": 12.5107, "Plentzia": 13.3567, "Portugalete": 12.4843,
-    "Santurtzi": 12.4982, "Sestao": 12.1967, "Sopelana": 13.1736, "Valle de Trapaga-Trapagaran": 12.6008, "Zalla": 12.6923
-}
-
-target_dist = {
-    "Amorebieta-Echano": 12.7575, "Astrabudua": 12.5144, "Arteagabeitia - Retuerto - Kareaga": 12.5262,
-    "Bagatza - S. Vicente": 12.5128, "Burtzeña": 12.7624, "Centro": 12.5324, "Cruces": 12.5419,
-    "Gorostiza - El Regato": 12.6497, "Lasesarre": 12.5610, "Lutxana - Llano": 12.5222, "Rontegui-Pormetxeta": 12.6522,
-    "Centro - Ariz - Uribarri": 12.5744, "Kalero - Basozelai": 12.6320, "Pozokoetxe": 12.7589, "San Miguel": 12.8766,
-    "Urbi": 12.7582, "Berango": 13.5906, "Abando - Albia": 13.3447, "Basurto - Zorroza": 12.6991,
-    "Begoña - Santutxu": 12.4886, "Casco Viejo": 12.6563, "Deusto": 12.8880, "Ibaiondo": 12.4429,
-    "Indautxu": 13.2667, "Otxarkoaga - Txurdinaga": 12.5998, "Rekalde": 12.6835, "San Adrián - La Peña": 12.6885,
-    "San Ignacio": 12.8584, "Uribarri": 12.7551, "Erandio": 12.7052, "Galdakao": 12.6368, "Algorta": 13.2005,
-    "Las Arenas": 13.4493, "Neguri": 13.5566, "Sta. María de Getxo": 13.6219, "Aldekoena-Artatzagana-Sarriena": 12.8565,
-    "Artatza-Pinueta-Pinosolo": 13.1395, "Centro Urbano-Hirigunea": 12.8427, "Lamiako-Txopoeta": 12.8079,
-    "Negurigane-Peruri": 13.0627, "Txorierri-Ondiz-Udondo": 12.8317, "Mungia": 13.2278, "Muskiz": 12.6844,
-    "Ortuella": 12.5107, "Plentzia": 13.3567, "Azeta - Abatxolo": 12.4711, "Buenavista": 12.6247,
-    "Casco Viejo - Muelle": 12.7163, "Centro": 12.5324, "La Florida": 12.6958, "Repelaga": 12.8433,
-    "Capitán Mendizabal - La Sardinera": 12.7631, "Kabiezes": 12.7143, "La Magdalena": 12.8809,
-    "La Txitxarra - Murrieta - Parke Santurtzi": 12.7914, "Larrea - San Juan de Dios - Peñota": 12.8668,
-    "Las Viñas": 12.4469, "Mamariga": 12.6506, "Villar - San Juan": 12.5527, "Zona Centro": 12.7457,
-    "Asilo - Rebonza - Urbinaga": 12.6622, "Centro - Albiz - Markonzaga": 12.4799, "La Paz - El Carmen - Anunciación": 12.6718,
-    "La Unión - Vista Alegre": 12.1639, "Sopelana": 13.1736, "Valle de Trapaga-Trapagaran": 12.6008, "Zalla": 12.6923
-}
-
-target_neigh = {
-    "Amorebieta-Echano": 12.7575, "Astrabudua": 12.5144, "Arteagabeitia - Retuerto - Kareaga": 12.5262,
-    "Bagatza - S. Vicente": 12.5128, "Burtzeña": 12.7624, "Centro": 12.7050, "Cruces": 12.5419,
-    "Gorostiza - El Regato": 12.6497, "Lasesarre": 12.5610, "Lutxana - Llano": 12.5222, "Rontegui-Pormetxeta": 12.6522,
-    "Centro - Ariz - Uribarri": 12.5744, "Kalero - Basozelai": 12.6320, "Pozokoetxe": 12.7589, "San Miguel": 12.8766,
-    "Urbi": 12.7582, "Berango": 13.5906, "Abandoibarra-Guggenheim": 13.4713, "Albia": 13.1780,
-    "Ensanche-Moyua": 13.6220, "Plaza Circular": 13.1027, "Zabalburu-Diputación": 12.9848, "Altamira": 12.7787,
-    "Basurtu": 13.0649, "Masustegui": 12.6580, "Olabeaga": 12.7478, "Zorrotza": 12.4962, "Begoña": 12.8294,
-    "Bolueta": 12.6027, "Santutxu": 12.4563, "Casco Viejo": 12.6563, "Arangoiti": 12.7386, "La Ribera-Ibarrekolanda": 12.7976,
-    "San Pedro de Deusto": 13.0273, "Atxuri": 12.5777, "Bilbao la Vieja": 12.6238, "Iturralde": 12.7229,
-    "Miribilla": 12.8301, "San Francisco": 12.3544, "Solokoetxe": 12.6053, "Zabala": 12.4703, "Alhondiga": 12.9024,
-    "Campuzano": 13.0100, "Sabino Arana-Jesuitas": 13.2693, "Zona Indautxu": 13.2018, "Otxarkoaga - Txurdinaga": 12.5998,
-    "Ametzola": 12.8970, "Artatzu-Larraskitu": 12.7797, "Irala": 12.5944, "Rekalde Centro": 12.5708,
-    "Uretamendi-Betolaza-Peñaskal": 12.6508, "La Peña": 12.6831, "San Adrián": 12.8289, "San Ignacio": 12.8584,
-    "Arabella": 12.7327, "Campo Volantín-Castaños": 12.9635, "Ciudad Jardín": 12.9001, "Mirador de Bilbao-Maurice Ravel": 12.7122,
-    "Uribarri": 12.6049, "Zurbaran": 12.8389, "Erandio": 12.7052, "Galdakao": 12.6368, "Alango": 12.8405,
-    "Centro": 12.7050, "Polígono Rojo-Aldapa": 12.8724, "Portu Zaharra": 12.8906, "Sarrikobaso": 12.8231,
-    "Villamonte": 12.8739, "Zona Usategui - Trinitarios": 13.2469, "Las Arenas Centro": 13.6182, "Muelle de las Arenas": 13.1280,
-    "Romo": 12.8325, "Santa Ana": 12.9158, "Villa Plentzia": 12.9822, "Neguri": 13.5566, "Sta. María de Getxo": 13.6219,
-    "Aldekoena-Artatzagana-Sarriena": 12.8565, "Artatza-Pinueta-Pinosolo": 13.1395, "Centro Urbano-Hirigunea": 12.8427,
-    "Lamiako-Txopoeta": 12.8079, "Negurigane-Peruri": 13.0627, "Txorierri-Ondiz-Udondo": 12.8317, "Mungia": 13.2278,
-    "Muskiz": 12.6844, "Ortuella": 12.5107, "Plentzia": 13.3567, "Azeta - Abatxolo": 12.4711, "Buenavista": 12.6247,
-    "Casco Viejo - Muelle": 12.7163, "Centro": 12.5324, "La Florida": 12.6958, "Repelaga": 12.8433,
-    "Capitán Mendizabal - La Sardinera": 12.7631, "Kabiezes": 12.7143, "La Magdalena": 12.8809,
-    "La Txitxarra - Murrieta - Parke Santurtzi": 12.7914, "Larrea - San Juan de Dios - Peñota": 12.8668,
-    "Las Viñas": 12.4469, "Mamariga": 12.6506, "Villar - San Juan": 12.5527, "Zona Centro": 12.7457,
-    "Asilo - Rebonza - Urbinaga": 12.6622, "Centro - Albiz - Markonzaga": 12.4799, "La Paz - El Carmen - Anunciación": 12.6718,
-    "La Unión - Vista Alegre": 12.1639, "Sopelana": 13.1736, "Valle de Trapaga-Trapagaran": 12.6008, "Zalla": 12.6923
-}
-
-# --- INPUTS DE USUARIO ---
 col1, col2 = st.columns(2)
 
 with col1:
     property_type = st.selectbox("Tipología del inmueble", ["flat", "chalet", "duplex", "countryHouse", "penthouse"])
-    municipality = st.selectbox("Municipio", list(target_muni.keys()))
-    district = st.selectbox("Distrito", list(target_dist.keys()))
-    neighborhood = st.selectbox("Barrio específico", list(target_neigh.keys()))
+    municipality = st.selectbox("Municipio", sorted(list(medianas_photos.keys())))
+    district = st.selectbox("Distrito (Mapeado automático)", [municipality])
+    neighborhood = st.selectbox("Barrio específico", sorted(list(medianas_distance.keys())))
     size = st.number_input("Superficie útil (m²)", min_value=30, max_value=600, value=85)
     exterior_input = st.selectbox("¿Es exterior?", ["Sí", "No"])
-    exterior_int = 1 if exterior_input == "Sí" else 0
+    exterior_bool = True if exterior_input == "Sí" else False
 
 with col2:
     rooms = st.number_input("Número de habitaciones", min_value=1, max_value=10, value=3)
     bathrooms = st.number_input("Número de baños", min_value=1, max_value=7, value=2)
     floor_final = st.number_input("Planta / Piso", min_value=0, max_value=15, value=2)
     lift_input = st.selectbox("¿Tiene ascensor?", ["Sí", "No"])
-    has_lift_int = 1 if lift_input == "Sí" else 0
-    status = st.selectbox("Estado", ["good", "newdevelopment", "renew"])
-    have_parking_input = st.selectbox("¿Garaje?", ["No", "Sí"])
-    have_parking_int = 1 if have_parking_input == "Sí" else 0
-    parking_inc_input = st.selectbox("¿Garaje incluido?", ["Sí", "No"])
-    is_parking_included_int = 1 if parking_inc_input == "Sí" else 0
-    parking_price = 30000.0 if have_parking_int and not is_parking_included_int else 0.0
+    has_lift_bool = True if lift_input == "Sí" else False
+    status = st.selectbox("Estado de conservación", ["good", "newdevelopment", "renew"])
+    have_parking_input = st.selectbox("¿Dispone de plaza de garaje?", ["No", "Sí"])
+    have_parking_bool = True if have_parking_input == "Sí" else False
+    parking_inc_input = st.selectbox("¿Garaje incluido en precio?", ["Sí", "No"])
+    is_parking_included_bool = True if parking_inc_input == "Sí" else False
+    parking_price = 30000.0 if have_parking_bool and not is_parking_included_bool else 0.0
 
-# --- MOTOR DE INFERENCIA (STACKING) ---
-if st.button("Calcular tasación comercial"):
+# --- INFERENCIA SÍNCRONA ---
+if st.button("Ejecutar cálculo de Tasación Comercial"):
     try:
-        p_lin = joblib.load('pipeline_lineal.joblib')
-        p_rf = joblib.load('pipeline_rf.joblib')
-        p_lgb = joblib.load('pipeline_lgb.joblib')
-        p_xgb = joblib.load('pipeline_xgb.joblib')
-        meta_urb = joblib.load('meta_urbano.joblib')
-        meta_prem = joblib.load('meta_premium.joblib')
-
-        # Definición del mercado premium (Se alinea rígidamente al experimento ganador de Colab)
-        # Cambiar el arreglo si el Stacking Ganador cambia de tipología
-        TIPOS_PREMIUM_GANADOR = ["chalet", "countryHouse"]
-
-        registro_modelo = {
-            'numPhotos': int(medianas_photos.get(neighborhood, 22.0)),
+        # 1. Construcción del DataFrame en crudo (Exactamente el esquema X_train_full)
+        raw_entry = pd.DataFrame([{
             'floor': int(floor_final),
-            'propertyType_flat': 1 if property_type == "flat" else 0,
-            'propertyType_chalet': 1 if property_type == "chalet" else 0,
-            'propertyType_duplex': 1 if property_type == "duplex" else 0,
-            'propertyType_countryHouse': 1 if property_type == "countryHouse" else 0,
-            'propertyType_penthouse': 1 if property_type == "penthouse" else 0,
-            'exterior': int(exterior_int),
             'rooms': int(rooms),
             'bathrooms': int(bathrooms),
-            'municipality': float(target_muni.get(municipality, 12.8114)),
-            'district': float(target_dist.get(district, 12.5324)),
-            'neighborhood': float(target_neigh.get(neighborhood, 12.7050)),
-            'showAddress': 0,
-            'distance': int(medianas_distance.get(neighborhood, 1500.0)),
-            'hasVideo': 0,
-            'status_newdevelopment': 1 if status == "newdevelopment" else 0,
-            'status_good': 1 if status == "good" else 0,
-            'status_renew': 1 if status == "renew" else 0,
-            'hasLift': int(has_lift_int),
-            'hasPlan': 0, 'has3DTour': 0, 'has360': 0, 'hasStaging': 0,
-            'highlight_Standar': 1, 'highlight_Destacado': 0, 'highlight_Top': 0, 'highlight_Top+': 0,
-            'haveParkingSpace': int(have_parking_int),
-            'isParkingIncluded': int(is_parking_included_int),
+            'hasLift': bool(has_lift_bool),
+            'exterior': bool(exterior_bool),
+            'haveParkingSpace': bool(have_parking_bool),
+            'isParkingIncluded': bool(is_parking_included_bool),
             'parkingSpacePrice': float(parking_price),
-            'subTypology_flat': 1 if property_type == "flat" else 0,
-            'subTypology_independantHouse': 1 if property_type == "chalet" else 0,
-            'subTypology_duplex': 1 if property_type == "duplex" else 0,
-            'subTypology_terracedHouse': 0,
-            'subTypology_countryHouse': 1 if property_type == "countryHouse" else 0,
-            'subTypology_penthouse': 1 if property_type == "penthouse" else 0,
-            'subTypology_semidetachedHouse': 0,
-            'floor_estimated': 0, 'hasLift_estimated': 0, 'exterior_estimated': 0,
-            'size_log': float(np.log1p(size))
-        }
+            'municipality': str(municipality),
+            'district': str(district),
+            'neighborhood': str(neighborhood),
+            'propertyType': str(property_type),
+            'subTypology': str(property_type),
+            'status': str(status),
+            'highlight': 'Standard',
+            'numPhotos': int(medianas_photos.get(neighborhood, 22.0)),
+            'showAddress': True,
+            'distance': float(medianas_distance.get(neighborhood, 1500.0)),
+            'hasVideo': False,
+            'hasPlan': False,
+            'has3DTour': False,
+            'has360': False,
+            'hasStaging': False,
+            'floor_estimated': int(0),
+            'hasLift_estimated': int(0),
+            'exterior_estimated': int(0),
+            'size': float(size)
+        }])
 
-        # Asegurar orden de columnas matemático idéntico a Colab usando la propiedad interna
-        df_entrada = pd.DataFrame([registro_modelo])[list(p_lin.feature_names_in_)]
+        # 2. Conversión estricta de tipos lógicos del Pipeline de Producción
+        cols_bool_pipeline = ['hasLift', 'exterior', 'haveParkingSpace', 'isParkingIncluded', 
+                              'showAddress', 'hasVideo', 'hasPlan', 'has3DTour', 'has360', 'hasStaging']
+        for c in cols_bool_pipeline:
+            raw_entry[c] = raw_entry[c].astype(int)
 
-        # Predicciones nivel 0 (Los modelos base son Pipelines, procesan internamente StandardScaler)
-        df_meta = pd.DataFrame({
-            'ElasticNet': p_lin.predict(df_entrada),
-            'RandomForest': p_rf.predict(df_entrada),
-            'LightGBM': p_lgb.predict(df_entrada),
-            'XGBoost': p_xgb.predict(df_entrada)
+        # 3. Paso de codificación en caliente (Replica el Paso 2.7)
+        encoded_entry = avm_hub["ohe_encoder"].transform(raw_entry)
+        encoded_entry = avm_hub["te_encoder"].transform(encoded_entry)
+
+        # 4. Inyección geométrica de la Superficie Logarítmica
+        encoded_entry['size_log'] = np.log1p(encoded_entry['size'])
+        encoded_entry = encoded_entry.drop(columns=['size'])
+
+        # 5. Alineación matemática forzada de las Features
+        features_entrenamiento = list(avm_hub["pipeline_lineal"].feature_names_in_)
+        df_produccion = encoded_entry[features_entrenamiento]
+
+        # 6. Ejecución de la inferencia paralela (Nivel 0)
+        oof_elastic = avm_hub["pipeline_lineal"].predict(df_produccion)
+        oof_rf = avm_hub["pipeline_rf"].predict(df_produccion)
+        oof_lgb = avm_hub["pipeline_lgb"].predict(df_produccion)
+        oof_xgb = avm_hub["pipeline_xgb"].predict(df_produccion)
+
+        df_meta_entrada = pd.DataFrame({
+            'ElasticNet': oof_elastic,
+            'RandomForest': oof_rf,
+            'LightGBM': oof_lgb,
+            'XGBoost': oof_xgb
         })
 
-        # Enrutamiento Nivel 1
-        # Al ser guardados como Pipelines, meta_urb y meta_prem escalan de forma automatizada df_meta
-        if property_type not in TIPOS_PREMIUM_GANADOR:
-            precio_euros = np.expm1(meta_urb.predict(df_meta)[0])
-            ruta = "Ecosistema Urbano"
-        else:
-            precio_euros = np.expm1(meta_prem.predict(df_meta)[0])
-            ruta = "Ecosistema Premium"
+        # 7. Enrutamiento asimétrico definitivo (Nivel 1)
+        # Sincronizado con la regla de partición optimizada en el TFM
+        TIPOS_PREMIUM_GANADOR = ["chalet", "countryHouse"]
 
-        st.success(f"**Tasación comercial:** {precio_euros:,.2f} €".replace(',', 'X').replace('.', ',').replace('X', '.'))
-        st.info(f"Ruta activa: {ruta}")
+        if property_type not in TIPOS_PREMIUM_GANADOR:
+            prediccion_log = avm_hub["meta_urbano"].predict(df_meta_entrada)[0]
+            ecosistema_activo = "Ecosistema de Mercado Urbano Estándar"
+        else:
+            prediccion_log = avm_hub["meta_premium"].predict(df_meta_entrada)[0]
+            ecosistema_activo = "Ecosistema de Mercado Premium Especializado"
+
+        # Reversión de la transformación logarítmica y formato de salida
+        precio_final_euros = np.expm1(prediccion_log)
+        precio_formateado = f"{precio_final_euros:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+        st.success(f"### **Valor predictivo comercial:** {precio_formateado} €")
+        st.info(f"**Ruta de Enrutamiento Activa:** {ecosistema_activo}")
+
     except Exception as e:
-        st.error(f"Error técnico en la inferencia: {e}")
+        st.error(f"Excepción detectada durante la ejecución del pipeline: {e}")
