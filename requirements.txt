@@ -5,3 +5,5 @@ joblib
 scikit-learn
 xgboost
 lightgbm
+category_encoders
+optuna
