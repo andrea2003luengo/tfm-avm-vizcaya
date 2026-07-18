@@ -12,7 +12,7 @@ st.set_page_config(
 
 # --- CABECERA VISUAL ---
 st.title("Sistema de Tasación Automatizada (AVM) - Vizcaya")
-st.write("Introduzca las características del inmueble para proyectar su valor comercial exacto a través de tu arquitectura de Stacking Híbrido.")
+st.write("Introduzca las características del inmueble para promediar su valor comercial exacto a través de la arquitectura de Stacking Híbrido.")
 st.markdown("---")
 
 # --- CARGA DETERMINISTA DE ARTIFACTOS ---
@@ -61,11 +61,11 @@ medianas_photos = {
     "Negurigane-Peruri": 46.0, "Txorierri-Ondiz-Udondo": 23.0, "Mungia": 42.0, "Muskiz": 30.0,
     "Ortuella": 19.0, "Plentzia": 36.0, "Azeta - Abatxolo": 22.0, "Buenavista": 23.0,
     "Casco Viejo - Muelle": 22.0, "La Florida": 27.0, "Repelaga": 40.0, "Capitán Mendizabal - La Sardinera": 27.0,
-    "Kabiezes": 25.0, "La Magdalena": 69.0, "La Txitxarra - Murrieta - Parke Santurtzi": 21.0,
-    "Larrea - San Juan de Dios - Peñota": 32.0, "Las Viñas": 20.0, "Mamariga": 16.0, "Villar - San Juan": 14.0,
-    "Zona Centro": 17.0, "Asilo - Rebonza - Urbinaga": 18.0, "Centro - Albiz - Markonzaga": 19.0,
-    "La Paz - El Carmen - Anunciación": 79.24, "La Unión - Vista Alegre": 16.0, "Sopelana": 24.0,
-    "Valle de Trapaga-Trapagaran": 19.0, "Zalla": 18.0
+    "Kabiezes": 25.0, "La Magdalena": 69.0, "La Txitxarra - Murrieta - Parke Santurtzi": 2112.0,
+    "Larrea - San Juan de Dios - Peñota": 10328.0, "Las Viñas": 11146.0, "Mamariga": 11603.0, "Villar - San Juan": 12178.0,
+    "Zona Centro": 10931.0, "Asilo - Rebonza - Urbinaga": 7169.0, "Centro - Albiz - Markonzaga": 7707.0,
+    "La Paz - El Carmen - Anunciación": 7924.0, "La Unión - Vista Alegre": 7547.0, "Sopelana": 13812.0,
+    "Valle de Trapaga-Trapagaran": 9407.0, "Zalla": 16758.0
 }
 
 medianas_distance = {
@@ -92,7 +92,7 @@ medianas_distance = {
     "Negurigane-Peruri": 9292.0, "Txorierri-Ondiz-Udondo": 7922.0, "Mungia": 12278.0, "Muskiz": 16144.0,
     "Ortuella": 10986.0, "Plentzia": 15680.0, "Azeta - Abatxolo": 8910.0, "Buenavista": 10002.0,
     "Casco Viejo - Muelle": 9440.0, "La Florida": 9511.0, "Repelaga": 8956.0, "Capitán Mendizabal - La Sardinera": 11200.0,
-    "Kabiezes": 10603.0, "La Magdalena": 12602.0, "La Txitxarra - Murrieta - Parke Santurtzi": 2112.0,
+    "Kabiezes": 10603.0, "La Magdalena": 12602.0, "La Txitxarra - Murrieta - Parke Santurtzi": 10588.0,
     "Larrea - San Juan de Dios - Peñota": 10328.0, "Las Viñas": 11146.0, "Mamariga": 11603.0, "Villar - San Juan": 12178.0,
     "Zona Centro": 10931.0, "Asilo - Rebonza - Urbinaga": 7169.0, "Centro - Albiz - Markonzaga": 7707.0,
     "La Paz - El Carmen - Anunciación": 7924.0, "La Unión - Vista Alegre": 7547.0, "Sopelana": 13812.0,
@@ -146,90 +146,90 @@ distritos_por_muni = {
     "Sopelana": ["Sopelana"], "Valle de Trapaga-Trapagaran": ["Valle de Trapaga-Trapagaran"], "Zalla": ["Zalla"]
 }
 
-# --- 1. FORMULARIO DE ENTRADA MANUAL DE DATOS ---
-with st.form("formulario_tasacion"):
-    col1, col2 = st.columns(2)
+# --- 1. SECCIÓN DE INPUTS REACTIVOS (FUERA DEL FORMULARIO PARA RESPUESTA EN TIEMPO REAL) ---
+col1, col2 = st.columns(2)
+
+with col1:
+    property_type = st.selectbox("Tipología del inmueble", ["flat", "chalet", "duplex", "countryHouse", "penthouse"])
     
-    with col1:
-        property_type = st.selectbox("Tipología del inmueble", ["flat", "chalet", "duplex", "countryHouse", "penthouse"])
-        
-        # Lógica condicional estricta para subTypology (Alineado con tu TFM)
-        if property_type == "flat":
-            sub_typology = "flat"
-            st.text_input("Subtipología asignada automáticamente", value="flat", disabled=True)
-        elif property_type == "duplex":
-            sub_typology = "duplex"
-            st.text_input("Subtipología asignada automáticamente", value="duplex", disabled=True)
-        elif property_type == "countryHouse":
-            sub_typology = "countryHouse"
-            st.text_input("Subtipología asignada automáticamente", value="countryHouse", disabled=True)
-        elif property_type == "penthouse":
-            sub_typology = "penthouse"
-            st.text_input("Subtipología asignada automáticamente", value="penthouse", disabled=True)
-        elif property_type == "chalet":
-            sub_typology = st.selectbox("Subtipología de chalet", ["terracedHouse", "independantHouse", "semidetachedHouse"])
+    # Lógica condicional e interactiva instantánea de subtipologías[cite: 32]
+    if property_type == "flat":
+        sub_typology = "flat"
+        st.text_input("Subtipología asignada", value="flat", disabled=True)
+    elif property_type == "duplex":
+        sub_typology = "duplex"
+        st.text_input("Subtipología asignada", value="duplex", disabled=True)
+    elif property_type == "countryHouse":
+        sub_typology = "countryHouse"
+        st.text_input("Subtipología asignada", value="countryHouse", disabled=True)
+    elif property_type == "penthouse":
+        sub_typology = "penthouse"
+        st.text_input("Subtipología asignada", value="penthouse", disabled=True)
+    elif property_type == "chalet":
+        sub_typology = st.selectbox("Subtipología de chalet", ["terracedHouse", "independantHouse", "semidetachedHouse"])
 
-        # Selector de Municipio Jerárquico
-        municipality = st.selectbox("Municipio", list(distritos_por_muni.keys()))
-        district = st.selectbox("Distrito", distritos_por_muni[municipality])
-        neighborhood = st.selectbox("Barrio específico", barrios_por_distrito[district])
+    # Selector de ubicación jerárquico reactivo
+    municipality = st.selectbox("Municipio", list(distritos_por_muni.keys()))
+    district = st.selectbox("Distrito", distritos_por_muni[municipality])
+    neighborhood = st.selectbox("Barrio específico", barrios_por_distrito[district])
 
-        size = st.number_input("Superficie útil (m²)", min_value=30, max_value=600, value=85, step=5)
-        
-        # Forzar 'Exterior' a True en chalets y casas de campo
-        if property_type in ["chalet", "countryHouse"]:
-            exterior_input = "Sí"
-            st.text_input("Orientación", value="Exterior (Fijo por tipología)", disabled=True)
-        else:
-            exterior_input = st.selectbox("¿Es exterior?", ["Sí", "No"])
-        exterior_bool = True if exterior_input == "Sí" else False
+    size = st.number_input("Superficie útil (m²)", min_value=30, max_value=600, value=85, step=5)
+    
+    # Lógica interactiva instantánea para orientación de chalets/casas de campo[cite: 32]
+    if property_type in ["chalet", "countryHouse"]:
+        exterior_input = "Sí"
+        st.text_input("Orientación", value="Exterior (Fijo por tipología)", disabled=True)
+    else:
+        exterior_input = st.selectbox("¿Es exterior?", ["Sí", "No"])
+    exterior_bool = True if exterior_input == "Sí" else False
 
-    with col2:
-        rooms = st.number_input("Número de habitaciones", min_value=1, max_value=10, value=3, step=1)
-        bathrooms = st.number_input("Número de baños", min_value=1, max_value=7, value=2, step=1)
-        
-        # Lógica condicional de 'floor'
-        if property_type in ["chalet", "countryHouse"]:
-            floor_final = 0
-            st.text_input("Planta / Piso", value="0 (Bajo automático)", disabled=True)
-        else:
-            floor_final = st.number_input("Planta / Piso", min_value=0, max_value=15, value=2, step=1)
+with col2:
+    rooms = st.number_input("Número de habitaciones", min_value=1, max_value=10, value=3, step=1)
+    bathrooms = st.number_input("Número de baños", min_value=1, max_value=7, value=2, step=1)
+    
+    # Lógica interactiva instantánea de plantas[cite: 32]
+    if property_type in ["chalet", "countryHouse"]:
+        floor_final = 0
+        st.text_input("Planta / Piso", value="0 (Bajo automático)", disabled=True)
+    else:
+        floor_final = st.number_input("Planta / Piso", min_value=0, max_value=15, value=2, step=1)
 
-        # Lógica condicional de 'hasLift'
-        if property_type in ["chalet", "countryHouse"]:
-            lift_input = "No"
-            st.text_input("¿Tiene ascensor?", value="No (Asignado automáticamente)", disabled=True)
-        else:
-            lift_input = st.selectbox("¿Tiene ascensor?", ["Sí", "No"])
-        has_lift_bool = True if lift_input == "Sí" else False
+    # Lógica interactiva instantánea de ascensor[cite: 32]
+    if property_type in ["chalet", "countryHouse"]:
+        lift_input = "No"
+        st.text_input("¿Tiene ascensor?", value="No (Asignado automáticamente)", disabled=True)
+    else:
+        lift_input = st.selectbox("¿Tiene ascensor?", ["Sí", "No"])
+    has_lift_bool = True if lift_input == "Sí" else False
 
-        # Estado de conservación
-        status = st.selectbox("Estado de conservación", ["good", "newdevelopment", "renew"])
+    status = st.selectbox("Estado de conservación", ["good", "newdevelopment", "renew"])
 
-        # Lógica de garaje estructurada
-        have_parking_input = st.selectbox("¿Dispone de garaje?", ["No", "Sí"])
-        if have_parking_input == "No":
-            have_parking_bool = False
-            is_parking_included_bool = False
-            st.text_input("¿Garaje incluido en el precio?", value="No aplica", disabled=True)
+    # Lógica interactiva instantánea de garajes[cite: 32]
+    have_parking_input = st.selectbox("¿Dispone de garaje?", ["No", "Sí"])
+    if have_parking_input == "No":
+        have_parking_bool = False
+        is_parking_included_bool = False
+        st.text_input("¿Garaje incluido en el precio?", value="No aplica", disabled=True)
+        parking_price = 0.0
+    else:
+        have_parking_bool = True
+        parking_inc_input = st.selectbox("¿El garaje está incluido en el precio?", ["Sí", "No"])
+        if parking_inc_input == "Sí":
+            is_parking_included_bool = True
             parking_price = 0.0
         else:
-            have_parking_bool = True
-            parking_inc_input = st.selectbox("¿El garaje está incluido en el precio?", ["Sí", "No"])
-            if parking_inc_input == "Sí":
-                is_parking_included_bool = True
-                parking_price = 0.0
-            else:
-                is_parking_included_bool = False
-                parking_price = 30000.0
+            is_parking_included_bool = False
+            parking_price = 30000.0
 
-    botón_tasar = st.form_submit_button("Calcular tasación comercial")
+# --- BOTÓN INDEPENDIENTE DE EJECUCIÓN (SÓLO PARA CÁLCULO) ---
+st.markdown(" ")
+botón_tasar = st.button("Ejecutar cálculo de Tasación Comercial", use_container_width=True)
 
-# --- 2. MOTOR DE INFERENCIA SÍNCRONO CON TRANSFORMADORES PIPELINE ---
+# --- 2. MOTOR DE INFERENCIA DE DOS NIVELES (STACKING ASIMÉTRICO) ---
 if botón_tasar:
     with st.spinner("Procesando simulación a través de los ecosistemas del Stacking..."):
         try:
-            # 1. Empaquetado de Datos en Crudo tal como venían de Idealista (Formato df1 original)
+            # 1. Construcción del DataFrame original en Crudo (Formato df1)[cite: 31]
             raw_entry = pd.DataFrame([{
                 'floor': int(floor_final),
                 'rooms': int(rooms),
@@ -260,25 +260,25 @@ if botón_tasar:
                 'size': float(size)
             }])
 
-            # 2. Conversión determinista a enteros (0/1) para variables lógicas
+            # 2. Conversión determinista a enteros (0/1) para variables lógicas[cite: 31]
             cols_bool_pipeline = ['hasLift', 'exterior', 'haveParkingSpace', 'isParkingIncluded', 
                                   'showAddress', 'hasVideo', 'hasPlan', 'has3DTour', 'has360', 'hasStaging']
             for c in cols_bool_pipeline:
                 raw_entry[c] = raw_entry[c].astype(int)
 
-            # 3. Paso secuencial por tus Codificadores Guardados de Scikit-Learn (Blindaje contra NaNs)
+            # 3. Transformación síncrona por encoders originales (One-Hot & Target Encoding)[cite: 31]
             encoded_entry = avm_hub["ohe_encoder"].transform(raw_entry)
             encoded_entry = avm_hub["te_encoder"].transform(encoded_entry)
 
-            # 4. Ingeniería Logarítmica Geométrica de la Superficie (np.log1p)
+            # 4. Transformación Logarítmica de Superficie (np.log1p)[cite: 31]
             encoded_entry['size_log'] = np.log1p(encoded_entry['size'])
             encoded_entry = encoded_entry.drop(columns=['size'])
 
-            # 5. Alineación forzada con las Características de Entrenamiento
+            # 5. Alineación estructural exacta con las Características de Entrenamiento[cite: 31]
             features_entrenamiento = list(avm_hub["pipeline_lineal"].feature_names_in_)
             df_produccion = encoded_entry[features_entrenamiento]
 
-            # --- NIVEL 0: Inferencia Síncrona de Modelos Base ---
+            # --- Inferencia Síncrona Nivel 0 ---[cite: 31]
             oof_elastic = avm_hub["pipeline_lineal"].predict(df_produccion)
             oof_rf = avm_hub["pipeline_rf"].predict(df_produccion)
             oof_lgb = avm_hub["pipeline_lgb"].predict(df_produccion)
@@ -291,27 +291,21 @@ if botón_tasar:
                 'XGBoost': oof_xgb
             })
 
-            # --- NIVEL 1: Enrutamiento Asimétrico Dinámico ---
+            # --- Enrutamiento Asimétrico Nivel 1 ---[cite: 31]
             TIPOS_PREMIUM_GANADOR = ["chalet", "countryHouse"]
 
             if property_type not in TIPOS_PREMIUM_GANADOR:
                 prediccion_log = avm_hub["meta_urbano"].predict(df_meta_entrada)[0]
-                ecosistema_activo = "Ecosistema de Mercado Urbano Estándar (Pisos / Áticos / Dúplex)"
             else:
                 prediccion_log = avm_hub["meta_premium"].predict(df_meta_entrada)[0]
-                ecosistema_activo = "Ecosistema de Mercado Premium Especializado (Chalets / Casas de Campo)"
 
-            # --- INGENIERÍA INVERSA: Destransformación monetaria exponencial (euros) ---
+            # --- Reversión Exponencial Inversa (np.expm1) ---[cite: 31]
             precio_final_euros = np.expm1(prediccion_log)
             precio_formateado = f"{precio_final_euros:,.2f} €".replace(',', 'X').replace('.', ',').replace('X', '.')
 
-            # --- 3. PRESENTACIÓN DE RESULTADOS ---
-            st.markdown("### Resultado del análisis del Stacking")
-            st.success(f"**Tarifa estimada de tasación comercial:** {precio_formateado}")
-            
-            st.info(f"**Ruta de enrutamiento activada:** {ecosistema_activo}\n\n"
-                    f"**Coeficiente de confianza del modelo (R²):** 92,06%\n\n"
-                    f"**Margen de Error Relativo (MAPE promedio):** 10,42%")
+            # --- 3. PRESENTACIÓN DEL RESULTADO LIMPIO (MINIMALISTA) ---
+            st.markdown("### Resultado del análisis de Tasación")
+            st.success(f"### **Valor predictivo comercial:** {precio_formateado}")
 
         except Exception as e:
             st.error(f"Error al procesar la predicción. Detalle técnico: {e}")
