@@ -58,10 +58,10 @@ medianas_photos = {
     "Las Arenas Centro": 30.0, "Muelle de las Arenas": 30.0, "Romo": 24.0, "Villa Plentzia": 37.0,
     "Santa Ana": 25.0, "Neguri": 24.0, "Sta. María de Getxo": 34.0, "Aldekoena-Artatzagana-Sarriena": 20.0,
     "Artatza-Pinueta-Pinosolo": 28.0, "Centro Urbano-Hirigunea": 30.0, "Lamiako-Txopoeta": 16.0,
-    "Negurigane-Peruri": 46.0, "Txorierri-Ondiz-Udondo": 23.0, "Mungia": 42.0, "Muskiz": 30.0,
+    "Negurigane-Peruri": 46.0, "Txorierri-OOndiz-Udondo": 23.0, "Mungia": 42.0, "Muskiz": 30.0,
     "Ortuella": 19.0, "Plentzia": 36.0, "Azeta - Abatxolo": 22.0, "Buenavista": 23.0,
     "Casco Viejo - Muelle": 22.0, "La Florida": 27.0, "Repelaga": 40.0, "Capitán Mendizabal - La Sardinera": 27.0,
-    "Kabiezes": 25.0, "La Magdalena": 69.0, "La Txitxarra - Murrieta - Parke Santurtzi": 2112.0,
+    "Kabiezes": 25.0, "La Magdalena": 69.0, "La Txitxarra - Murrieta - Parke Santurtzi": 10588.0,
     "Larrea - San Juan de Dios - Peñota": 10328.0, "Las Viñas": 11146.0, "Mamariga": 11603.0, "Villar - San Juan": 12178.0,
     "Zona Centro": 10931.0, "Asilo - Rebonza - Urbinaga": 7169.0, "Centro - Albiz - Markonzaga": 7707.0,
     "La Paz - El Carmen - Anunciación": 7924.0, "La Unión - Vista Alegre": 7547.0, "Sopelana": 13812.0,
@@ -221,9 +221,9 @@ with col2:
             is_parking_included_bool = False
             parking_price = 30000.0
 
-# --- BOTÓN INDEPENDIENTE DE EJECUCIÓN (SÓLO PARA CÁLCULO) ---
+# --- BOTÓN INDEPENDIENTE DE EJECUCIÓN ---
 st.markdown(" ")
-botón_tasar = st.button("Ejecutar cálculo de Tasación Comercial", use_container_width=True)
+botón_tasar = st.button("Calcular el precio de mercado", use_container_width=True)
 
 # --- 2. MOTOR DE INFERENCIA DE DOS NIVELES (STACKING ASIMÉTRICO) ---
 if botón_tasar:
@@ -303,9 +303,9 @@ if botón_tasar:
             precio_final_euros = np.expm1(prediccion_log)
             precio_formateado = f"{precio_final_euros:,.2f} €".replace(',', 'X').replace('.', ',').replace('X', '.')
 
-            # --- 3. PRESENTACIÓN DEL RESULTADO LIMPIO (MINIMALISTA) ---
+            # --- 3. PRESENTACIÓN DEL RESULTADO LIMPIO (MINIMALISTA Y FORMATEADO) ---
             st.markdown("### Resultado del análisis de Tasación")
-            st.success(f"### **Valor predictivo comercial:** {precio_formateado}")
+            st.success(f"Valor predictivo comercial: {precio_formateado}")
 
         except Exception as e:
             st.error(f"Error al procesar la predicción. Detalle técnico: {e}")
