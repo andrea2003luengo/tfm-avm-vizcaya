@@ -3,15 +3,15 @@ import pandas as pd
 import numpy as np
 import joblib
 
-# Configuración inicial de la página web
+# Configuración inicial
 st.set_page_config(page_title="AVM Vizcaya - Stacking Híbrido", layout="centered")
 
 # --- CABECERA VISUAL ---
 st.title("Sistema de Tasación Automatizada (AVM) - Vizcaya")
-st.write("Introduzca las características del inmueble para proyectar su valor comercial exacto a través de tu arquitectura de Stacking Híbrido.")
+st.write("Introduzca las características del inmueble para proyectar su valor comercial.")
 st.markdown("---")
 
-# --- MEDIANAS DE ENTRADA OPTIMIZADAS (SÓLO BARRIOS DEL TOP 20) ---
+# --- DICCIONARIOS DE DATOS Y CODIFICACIÓN ---
 medianas_photos = {
     "Amorebieta-Echano": 15.0, "Astrabudua": 19.0, "Arteagabeitia - Retuerto - Kareaga": 23.0,
     "Bagatza - S. Vicente": 28.0, "Burtzeña": 24.0, "Centro": 22.0, "Cruces": 27.0,
@@ -74,7 +74,6 @@ medianas_distance = {
     "Valle de Trapaga-Trapagaran": 9407.0, "Zalla": 16758.0
 }
 
-# --- DICCIONARIOS DE CODIFICACIÓN EN TARGET ENCODING GEOGRÁFICO ---
 target_muni = {
     "Amorebieta-Echano": 12.7575, "Astrabudua": 12.5144, "Barakaldo": 12.5300, "Basauri": 12.5741, "Berango": 13.5906,
     "Bilbao": 12.8114, "Erandio": 12.7052, "Galdakao": 12.6368, "Getxo": 13.4333, "Leioa": 13.0733,
@@ -125,7 +124,7 @@ target_neigh = {
     "Aldekoena-Artatzagana-Sarriena": 12.8565, "Artatza-Pinueta-Pinosolo": 13.1395, "Centro Urbano-Hirigunea": 12.8427,
     "Lamiako-Txopoeta": 12.8079, "Negurigane-Peruri": 13.0627, "Txorierri-Ondiz-Udondo": 12.8317, "Mungia": 13.2278,
     "Muskiz": 12.6844, "Ortuella": 12.5107, "Plentzia": 13.3567, "Azeta - Abatxolo": 12.4711, "Buenavista": 12.6247,
-    "Casco Viejo - Muelle": 12.7163, "Centro": 12.7050, "La Florida": 12.6958, "Repelaga": 12.8433,
+    "Casco Viejo - Muelle": 12.7163, "Centro": 12.5324, "La Florida": 12.6958, "Repelaga": 12.8433,
     "Capitán Mendizabal - La Sardinera": 12.7631, "Kabiezes": 12.7143, "La Magdalena": 12.8809,
     "La Txitxarra - Murrieta - Parke Santurtzi": 12.7914, "Larrea - San Juan de Dios - Peñota": 12.8668,
     "Las Viñas": 12.4469, "Mamariga": 12.6506, "Villar - San Juan": 12.5527, "Zona Centro": 12.7457,
@@ -133,254 +132,103 @@ target_neigh = {
     "La Unión - Vista Alegre": 12.1639, "Sopelana": 13.1736, "Valle de Trapaga-Trapagaran": 12.6008, "Zalla": 12.6923
 }
 
-# --- ELEMENTOS INTERACTIVOS (SELECTORES FUERA DE CUALQUIER FORMULARIO) ---
+# --- INPUTS DE USUARIO ---
 col1, col2 = st.columns(2)
 
 with col1:
     property_type = st.selectbox("Tipología del inmueble", ["flat", "chalet", "duplex", "countryHouse", "penthouse"])
-    
-    # Lógica condicional estricta para 'subTypology' (actualización inmediata)
-    if property_type == "flat":
-        sub_typology = "flat"
-        st.text_input("Subtipología asignada automáticamente", value="flat", disabled=True)
-    elif property_type == "duplex":
-        sub_typology = "duplex"
-        st.text_input("Subtipología asignada automáticamente", value="duplex", disabled=True)
-    elif property_type == "countryHouse":
-        sub_typology = "countryHouse"
-        st.text_input("Subtipología asignada automáticamente", value="countryHouse", disabled=True)
-    elif property_type == "penthouse":
-        sub_typology = "penthouse"
-        st.text_input("Subtipología asignada automáticamente", value="penthouse", disabled=True)
-    elif property_type == "chalet":
-        sub_typology = st.selectbox("Subtipología de chalet", ["terracedHouse", "independantHouse", "semidetachedHouse"])
-
-    # Selector de municipio
-    municipio_opciones = ["Bilbao", "Barakaldo", "Getxo", "Portugalete", "Santurtzi", "Sestao", "Leioa", "Basauri", "Mungia", "Plentzia", "Berango", "Amorebieta-Echano", "Galdakao", "Ortuella", "Sopelana", "Valle de Trapaga-Trapagaran", "Astrabudua", "Erandio", "Zalla", "Muskiz"]
-    municipality = st.selectbox("Municipio", municipio_opciones)
-
-    # Mapeo condicional de distritos según el municipio (actualización inmediata)
-    distritos_por_muni = {
-        "Amorebieta-Echano": ["Amorebieta-Echano"], "Astrabudua": ["Astrabudua"],
-        "Barakaldo": ["Centro", "Rontegui-Pormetxeta", "Bagatza - S. Vicente", "Cruces", "Burtzeña", "Lasesarre", "Lutxana - Llano", "Arteagabeitia - Retuerto - Kareaga", "Gorostiza - El Regato"],
-        "Basauri": ["San Miguel", "Kalero - Basozelai", "Centro - Ariz - Uribarri", "Pozokoetxe", "Urbi"], "Berango": ["Berango"],
-        "Bilbao": ["Rekalde", "Ibaiondo", "Deusto", "Abando - Albia", "Indautxu", "Basurto - Zorroza", "Uribarri", "Begoña - Santutxu", "Casco Viejo", "San Ignacio", "San Adrián - La Peña", "Otxarkoaga - Txurdinaga"],
-        "Erandio": ["Erandio"], "Galdakao": ["Galdakao"], "Getxo": ["Neguri", "Las Arenas", "Sta. María de Getxo", "Algorta"],
-        "Leioa": ["Artatza-Pinueta-Pinosolo", "Lamiako-Txopoeta", "Centro Urbano-Hirigunea", "Txorierri-Ondiz-Udondo", "Negurigane-Peruri", "Aldekoena-Artatzagana-Sarriena"],
-        "Mungia": ["Mungia"], "Muskiz": ["Muskiz"], "Ortuella": ["Ortuella"], "Plentzia": ["Plentzia"],
-        "Portugalete": ["Centro", "La Florida", "Casco Viejo - Muelle", "Azeta - Abatxolo", "Buenavista", "Repelaga"],
-        "Santurtzi": ["Kabiezes", "Mamariga", "Las Viñas", "La Txitxarra - Murrieta - Parke Santurtzi", "La Magdalena", "Villar - San Juan", "Zona Centro", "Capitán Mendizabal - La Sardinera", "Larrea - San Juan de Dios - Peñota"],
-        "Sestao": ["La Unión - Vista Alegre", "Centro - Albiz - Markonzaga", "La Paz - El Carmen - Anunciación", "Asilo - Rebonza - Urbinaga"],
-        "Sopelana": ["Sopelana"], "Valle de Trapaga-Trapagaran": ["Valle de Trapaga-Trapagaran"], "Zalla": ["Zalla"]
-    }
-    district = st.selectbox("Distrito", distritos_por_muni[municipality])
-
-    # Mapeo condicional de barrios según el distrito (actualización inmediata)
-    barrios_por_distrito = {
-        "Amorebieta-Echano": ["Amorebieta-Echano"], "Astrabudua": ["Astrabudua"],
-        "Arteagabeitia - Retuerto - Kareaga": ["Arteagabeitia - Retuerto - Kareaga"], "Bagatza - S. Vicente": ["Bagatza - S. Vicente"],
-        "Burtzeña": ["Burtzeña"], "Centro": ["Centro"], "Cruces": ["Cruces"], "Gorostiza - El Regato": ["Gorostiza - El Regato"],
-        "Lasesarre": ["Lasesarre"], "Lutxana - Llano": ["Lutxana - Llano"], "Rontegui-Pormetxeta": ["Rontegui-Pormetxeta"],
-        "Centro - Ariz - Uribarri": ["Centro - Ariz - Uribarri"], "Kalero - Basozelai": ["Kalero - Basozelai"],
-        "Pozokoetxe": ["Pozokoetxe"], "San Miguel": ["San Miguel"], "Urbi": ["Urbi"], "Berango": ["Berango"],
-        "Abando - Albia": ["Ensanche-Moyua", "Zabalburu-Diputación", "Plaza Circular", "Abandoibarra-Guggenheim", "Albia"],
-        "Basurto - Zorroza": ["Zorrotza", "Basurtu", "Olabeaga", "Masustegui", "Altamira"], "Begoña - Santutxu": ["Santutxu", "Bolueta", "Begoña"],
-        "Casco Viejo": ["Casco Viejo"], "Deusto": ["La Ribera-Ibarrekolanda", "San Pedro de Deusto", "Arangoiti"],
-        "Ibaiondo": ["Zabala", "Solokoetxe", "Atxuri", "San Francisco", "Iturralde", "Miribilla", "Bilbao la Vieja"],
-        "Indautxu": ["Sabino Arana-Jesuitas", "Zona Indautxu", "Alhondiga", "Campuzano"], "Otxarkoaga - Txurdinaga": ["Otxarkoaga - Txurdinaga"],
-        "Rekalde": ["Irala", "Artatzu-Larraskitu", "Rekalde Centro", "Ametzola", "Uretamendi-Betolaza-Peñaskal"],
-        "San Adrián - La Peña": ["La Peña", "San Adrián"], "San Ignacio": ["San Ignacio"],
-        "Uribarri": ["Arabella", "Ciudad Jardín", "Uribarri", "Campo Volantín-Castaños", "Mirador de Bilbao-Maurice Ravel", "Zurbaran"],
-        "Erandio": ["Erandio"], "Galdakao": ["Galdakao"],
-        "Algorta": ["Polígono Rojo-Aldapa", "Villamonte", "Centro", "Zona Usategui - Trinitarios", "Sarrikobaso", "Alango", "Portu Zaharra"],
-        "Las Arenas": ["Las Arenas Centro", "Muelle de las Arenas", "Romo", "Villa Plentzia", "Santa Ana"],
-        "Neguri": ["Neguri"], "Sta. María de Getxo": ["Sta. María de Getxo"], "Aldekoena-Artatzagana-Sarriena": ["Aldekoena-Artatzagana-Sarriena"],
-        "Artatza-Pinueta-Pinosolo": ["Artatza-Pinueta-Pinosolo"], "Centro Urbano-Hirigunea": ["Centro Urbano-Hirigunea"],
-        "Lamiako-Txopoeta": ["Lamiako-Txopoeta"], "Negurigane-Peruri": ["Negurigane-Peruri"], "Txorierri-Ondiz-Udondo": ["Txorierri-Ondiz-Udondo"],
-        "Mungia": ["Mungia"], "Muskiz": ["Muskiz"], "Ortuella": ["Ortuella"], "Plentzia": ["Plentzia"],
-        "Azeta - Abatxolo": ["Azeta - Abatxolo"], "Buenavista": ["Buenavista"], "Casco Viejo - Muelle": ["Casco Viejo - Muelle"],
-        "La Florida": ["La Florida"], "Repelaga": ["Repelaga"], "Capitán Mendizabal - La Sardinera": ["Capitán Mendizabal - La Sardinera"],
-        "Kabiezes": ["Kabiezes"], "La Magdalena": ["La Magdalena"], "La Txitxarra - Murrieta - Parke Santurtzi": ["La Txitxarra - Murrieta - Parke Santurtzi"],
-        "Larrea - San Juan de Dios - Peñota": ["Larrea - San Juan de Dios - Peñota"], "Las Viñas": ["Las Viñas"],
-        "Mamariga": ["Mamariga"], "Villar - San Juan": ["Villar - San Juan"], "Zona Centro": ["Zona Centro"],
-        "Asilo - Rebonza - Urbinaga": ["Asilo - Rebonza - Urbinaga"], "Centro - Albiz - Markonzaga": ["Centro - Albiz - Markonzaga"],
-        "La Paz - El Carmen - Anunciación": ["La Paz - El Carmen - Anunciación"], "La Unión - Vista Alegre": ["La Unión - Vista Alegre"],
-        "Sopelana": ["Sopelana"], "Valle de Trapaga-Trapagaran": ["Valle de Trapaga-Trapagaran"], "Zalla": ["Zalla"]
-    }
-    neighborhood = st.selectbox("Barrio específico", barrios_por_distrito[district])
-
-    # Rango de superficie útil
-    size = st.number_input("Superficie útil (m²)", min_value=30, max_value=600, value=85, step=5)
-    
-    # Forzar 'Exterior' a True (1) en chalet y countryHouse
-    if property_type in ["chalet", "countryHouse"]:
-        exterior_int = 1
-        st.text_input("Orientación", value="Exterior (Fijo por tipología)", disabled=True)
-    else:
-        exterior_input = st.selectbox("¿Es exterior?", ["Sí", "No"])
-        exterior_int = 1 if exterior_input == "Sí" else 0
+    municipality = st.selectbox("Municipio", list(target_muni.keys()))
+    district = st.selectbox("Distrito", list(target_dist.keys()))
+    neighborhood = st.selectbox("Barrio específico", list(target_neigh.keys()))
+    size = st.number_input("Superficie útil (m²)", min_value=30, max_value=600, value=85)
+    exterior_input = st.selectbox("¿Es exterior?", ["Sí", "No"])
+    exterior_int = 1 if exterior_input == "Sí" else 0
 
 with col2:
-    rooms = st.number_input("Número de habitaciones", min_value=1, max_value=10, value=3, step=1)
-    bathrooms = st.number_input("Número de baños", min_value=1, max_value=7, value=2, step=1)
-    
-    # Lógica condicional de 'floor'
-    if property_type in ["chalet", "countryHouse"]:
-        floor_final = 0
-        st.text_input("Planta / Piso", value="0 (Bajo automático)", disabled=True)
-    else:
-        floor_final = st.number_input("Planta / Piso", min_value=1, max_value=15, value=2, step=1)
+    rooms = st.number_input("Número de habitaciones", min_value=1, max_value=10, value=3)
+    bathrooms = st.number_input("Número de baños", min_value=1, max_value=7, value=2)
+    floor_final = st.number_input("Planta / Piso", min_value=0, max_value=15, value=2)
+    lift_input = st.selectbox("¿Tiene ascensor?", ["Sí", "No"])
+    has_lift_int = 1 if lift_input == "Sí" else 0
+    status = st.selectbox("Estado", ["good", "newdevelopment", "renew"])
+    have_parking_input = st.selectbox("¿Garaje?", ["No", "Sí"])
+    have_parking_int = 1 if have_parking_input == "Sí" else 0
+    parking_inc_input = st.selectbox("¿Garaje incluido?", ["Sí", "No"])
+    is_parking_included_int = 1 if parking_inc_input == "Sí" else 0
+    parking_price = 30000.0 if have_parking_int and not is_parking_included_int else 0.0
 
-    # Lógica condicional de 'hasLift'
-    if property_type in ["chalet", "countryHouse"]:
-        has_lift_int = 0
-        st.text_input("¿Tiene ascensor?", value="No (Asignado automáticamente)", disabled=True)
-    else:
-        lift_input = st.selectbox("¿Tiene ascensor?", ["Sí", "No"])
-        has_lift_int = 1 if lift_input == "Sí" else 0
+# --- MOTOR DE INFERENCIA (STACKING) ---
+if st.button("Calcular tasación comercial"):
+    try:
+        p_lin = joblib.load('pipeline_lineal.joblib')
+        p_rf = joblib.load('pipeline_rf.joblib')
+        p_lgb = joblib.load('pipeline_lgb.joblib')
+        p_xgb = joblib.load('pipeline_xgb.joblib')
+        meta_urb = joblib.load('meta_urbano.joblib')
+        meta_prem = joblib.load('meta_premium.joblib')
 
-    # Estado de conservación
-    status = st.selectbox("Estado de conservación", ["good", "newdevelopment", "renew"])
+        # Definición del mercado premium (Se alinea rígidamente al experimento ganador de Colab)
+        # Cambiar el arreglo si el Stacking Ganador cambia de tipología
+        TIPOS_PREMIUM_GANADOR = ["chalet", "countryHouse"]
 
-    # Lógica condicional de garaje y precio del garaje
-    have_parking_input = st.selectbox("¿Dispone de garaje?", ["No", "Sí"])
-    if have_parking_input == "No":
-        have_parking_int = 0
-        is_parking_included_int = 0
-        st.text_input("¿Garaje incluido en el precio?", value="No aplica", disabled=True)
-        parking_price = 0.0
-    else:
-        have_parking_int = 1
-        parking_inc_input = st.selectbox("¿El garaje está incluido en el precio?", ["Sí", "No"])
-        if parking_inc_input == "Sí":
-            is_parking_included_int = 1
-            parking_price = 0.0
+        registro_modelo = {
+            'numPhotos': int(medianas_photos.get(neighborhood, 22.0)),
+            'floor': int(floor_final),
+            'propertyType_flat': 1 if property_type == "flat" else 0,
+            'propertyType_chalet': 1 if property_type == "chalet" else 0,
+            'propertyType_duplex': 1 if property_type == "duplex" else 0,
+            'propertyType_countryHouse': 1 if property_type == "countryHouse" else 0,
+            'propertyType_penthouse': 1 if property_type == "penthouse" else 0,
+            'exterior': int(exterior_int),
+            'rooms': int(rooms),
+            'bathrooms': int(bathrooms),
+            'municipality': float(target_muni.get(municipality, 12.8114)),
+            'district': float(target_dist.get(district, 12.5324)),
+            'neighborhood': float(target_neigh.get(neighborhood, 12.7050)),
+            'showAddress': 0,
+            'distance': int(medianas_distance.get(neighborhood, 1500.0)),
+            'hasVideo': 0,
+            'status_newdevelopment': 1 if status == "newdevelopment" else 0,
+            'status_good': 1 if status == "good" else 0,
+            'status_renew': 1 if status == "renew" else 0,
+            'hasLift': int(has_lift_int),
+            'hasPlan': 0, 'has3DTour': 0, 'has360': 0, 'hasStaging': 0,
+            'highlight_Standar': 1, 'highlight_Destacado': 0, 'highlight_Top': 0, 'highlight_Top+': 0,
+            'haveParkingSpace': int(have_parking_int),
+            'isParkingIncluded': int(is_parking_included_int),
+            'parkingSpacePrice': float(parking_price),
+            'subTypology_flat': 1 if property_type == "flat" else 0,
+            'subTypology_independantHouse': 1 if property_type == "chalet" else 0,
+            'subTypology_duplex': 1 if property_type == "duplex" else 0,
+            'subTypology_terracedHouse': 0,
+            'subTypology_countryHouse': 1 if property_type == "countryHouse" else 0,
+            'subTypology_penthouse': 1 if property_type == "penthouse" else 0,
+            'subTypology_semidetachedHouse': 0,
+            'floor_estimated': 0, 'hasLift_estimated': 0, 'exterior_estimated': 0,
+            'size_log': float(np.log1p(size))
+        }
+
+        # Asegurar orden de columnas matemático idéntico a Colab usando la propiedad interna
+        df_entrada = pd.DataFrame([registro_modelo])[list(p_lin.feature_names_in_)]
+
+        # Predicciones nivel 0 (Los modelos base son Pipelines, procesan internamente StandardScaler)
+        df_meta = pd.DataFrame({
+            'ElasticNet': p_lin.predict(df_entrada),
+            'RandomForest': p_rf.predict(df_entrada),
+            'LightGBM': p_lgb.predict(df_entrada),
+            'XGBoost': p_xgb.predict(df_entrada)
+        })
+
+        # Enrutamiento Nivel 1
+        # Al ser guardados como Pipelines, meta_urb y meta_prem escalan de forma automatizada df_meta
+        if property_type not in TIPOS_PREMIUM_GANADOR:
+            precio_euros = np.expm1(meta_urb.predict(df_meta)[0])
+            ruta = "Ecosistema Urbano"
         else:
-            is_parking_included_int = 0
-            parking_price = 30000.0
+            precio_euros = np.expm1(meta_prem.predict(df_meta)[0])
+            ruta = "Ecosistema Premium"
 
-# Botón estándar fuera de formulario para ejecutar la inferencia
-st.markdown("<br>", unsafe_allow_html=True)
-botón_tasar = st.button("Calcular tasación comercial", use_container_width=True)
-
-# --- 2. MOTOR DE INFERENCIA DE DOS NIVELES (STACKING) ---
-if botón_tasar:
-    with st.spinner("Procesando simulación a través de los ecosistemas del Stacking..."):
-        try:
-            # Cargamos de forma síncrona los componentes (.joblib)
-            p_lin = joblib.load('pipeline_lineal.joblib')
-            p_rf = joblib.load('pipeline_rf.joblib')
-            p_lgb = joblib.load('pipeline_lgb.joblib')
-            p_xgb = joblib.load('pipeline_xgb.joblib')
-            meta_urb = joblib.load('meta_urbano.joblib')
-            meta_prem = joblib.load('meta_premium.joblib')
-
-            # Extracción de medianas con fallback de seguridad
-            num_photos_default = medianas_photos.get(neighborhood, 22.0)
-            distance_default = medianas_distance.get(neighborhood, 1500.0)
-
-            # --- TRADUCCIÓN INVISIBLE DE TEXTOS A SUS RESPECTIVOS CÓDIGOS TARGET ENCODING ---
-            muni_encoded = target_muni.get(municipality, 12.8114)
-            dist_encoded = target_dist.get(district, 12.5324)
-            neigh_encoded = target_neigh.get(neighborhood, 12.7050)
-
-            # --- RECONSTRUCCIÓN DEL VECTOR DE COLUMNAS DEL MODELO (ONE-HOT ENCODING MANUAL) ---
-            registro_modelo = {
-                'numPhotos': int(num_photos_default),
-                'floor': int(floor_final),
-                
-                # 'propertyType' encoding (Manual One-Hot)
-                'propertyType_flat': 1 if property_type == "flat" else 0,
-                'propertyType_chalet': 1 if property_type == "chalet" else 0,
-                'propertyType_duplex': 1 if property_type == "duplex" else 0,
-                'propertyType_countryHouse': 1 if property_type == "countryHouse" else 0,
-                'propertyType_penthouse': 1 if property_type == "penthouse" else 0,
-                
-                'exterior': int(exterior_int),
-                'rooms': int(rooms),
-                'bathrooms': int(bathrooms),
-                
-                # Enviamos las codificaciones numéricas
-                'municipality': float(muni_encoded),
-                'district': float(dist_encoded),
-                'neighborhood': float(neigh_encoded),
-                
-                'showAddress': 0, # Fijo en False (0)
-                'distance': int(distance_default),
-                'hasVideo': 0, # Fijo en False (0)
-                
-                # 'status' encoding (Manual One-Hot)
-                'status_newdevelopment': 1 if status == "newdevelopment" else 0,
-                'status_good': 1 if status == "good" else 0,
-                'status_renew': 1 if status == "renew" else 0,
-                
-                'hasLift': int(has_lift_int),
-                'hasPlan': 0,
-                'has3DTour': 0,
-                'has360': 0,
-                'hasStaging': 0,
-                
-                # 'highlight' encoding (Fijo en standar)
-                'highlight_Standar': 1,
-                'highlight_Destacado': 0,
-                'highlight_Top': 0,
-                'highlight_Top+': 0,
-                
-                'haveParkingSpace': int(have_parking_int),
-                'isParkingIncluded': int(is_parking_included_int),
-                'parkingSpacePrice': float(parking_price),
-                
-                # 'subTypology' encoding (Manual One-Hot)
-                'subTypology_flat': 1 if sub_typology == "flat" else 0,
-                'subTypology_independantHouse': 1 if sub_typology == "independantHouse" else 0,
-                'subTypology_duplex': 1 if sub_typology == "duplex" else 0,
-                'subTypology_terracedHouse': 1 if sub_typology == "terracedHouse" else 0,
-                'subTypology_countryHouse': 1 if sub_typology == "countryHouse" else 0,
-                'subTypology_penthouse': 1 if sub_typology == "penthouse" else 0,
-                'subTypology_semidetachedHouse': 1 if sub_typology == "semidetachedHouse" else 0,
-                
-                # Estimadores residuales fijos (0)
-                'floor_estimated': 0,
-                'hasLift_estimated': 0,
-                'exterior_estimated': 0,
-                
-                # Ingeniería de variables exacta aplicando np.log1p
-                'size_log': float(np.log1p(size))
-            }
-
-            # Asegura el orden exacto de columnas que espera el modelo
-            expected_features = list(p_lin.feature_names_in_)
-            df_entrada = pd.DataFrame([registro_modelo])[expected_features]
-
-            # --- NIVEL 0: Predicciones preliminares logarítmicas ---
-            pred_lin = p_lin.predict(df_entrada)
-            pred_rf = p_rf.predict(df_entrada)
-            pred_lgb = p_lgb.predict(df_entrada)
-            pred_xgb = p_xgb.predict(df_entrada)
-
-            # --- NIVEL 1: Enrutamiento asimétrico dinámico ---
-            if property_type != 'chalet':
-                # Mercado urbano general
-                df_meta = pd.DataFrame({'ElasticNet': pred_lin, 'LightGBM': pred_lgb, 'XGBoost': pred_xgb})
-                precio_log = meta_urb.predict(df_meta)[0]
-                ecosistema_texto = "Ecosistema urbano general (Pisos / Áticos / Dúplex / Casas de campo)"
-            else:
-                # Mercado residencial premium
-                df_meta = pd.DataFrame({'ElasticNet': pred_lin, 'RandomForest': pred_rf, 'LightGBM': pred_lgb})
-                precio_log = meta_prem.predict(df_meta)[0]
-                ecosistema_texto = "Ecosistema residencial premium (Chalets)"
-
-            # --- INGENIERÍA INVERSA: Destransformación monetaria exponencial (euros) ---
-            precio_euros = np.expm1(precio_log)
-
-            # --- 3. PRESENTACIÓN DE RESULTADOS ---
-            st.markdown("### Resultado del análisis del Stacking")
-            precio_formateado = f"{precio_euros:,.2f} €".replace(',', 'X').replace('.', ',').replace('X', '.')
-            st.success(f"**Tarifa estimada de tasación comercial:** {precio_formateado}")
-            
- 	    # Cuadro informativo metodológico
-            st.info(f"**Ruta de enrutamiento activada:** {ecosistema_texto}\n\n"
-                    f"**Coeficiente de confianza del modelo (R²):** 92,06%")
-        
-        except Exception as e:
-            st.error(f"Error al procesar la predicción. Detalle técnico: {e}")
+        st.success(f"**Tasación comercial:** {precio_euros:,.2f} €".replace(',', 'X').replace('.', ',').replace('X', '.'))
+        st.info(f"Ruta activa: {ruta}")
+    except Exception as e:
+        st.error(f"Error técnico en la inferencia: {e}")
