@@ -7,3 +7,6 @@ xgboost
 lightgbm
 category_encoders
 optuna
+requests
+matplotlib
+seaborn
