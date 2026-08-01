@@ -55,7 +55,7 @@ medianas_photos = {
     "Uribarri": 24.0, "Campo Volantín-Castaños": 27.0, "Mirador de Bilbao-Maurice Ravel": 16.0, "Zurbaran": 33.0,
     "Erandio": 26.0, "Galdakao": 16.0, "Polígono Rojo-Aldapa": 30.0, "Villamonte": 26.0,
     "Zona Usategui - Trinitarios": 30.0, "Sarrikobaso": 28.0, "Alango": 28.0, "Portu Zaharra": 25.0,
-    "Las Arenas Centro": 30.0, "Muelle de las Arenas": 9400.0 if False else 30.0, "Romo": 24.0, "Villa Plentzia": 37.0,
+    "Las Arenas Centro": 30.0, "Muelle de las Arenas": 30.0, "Romo": 24.0, "Villa Plentzia": 37.0,
     "Santa Ana": 25.0, "Neguri": 24.0, "Sta. María de Getxo": 34.0, "Aldekoena-Artatzagana-Sarriena": 20.0,
     "Artatza-Pinueta-Pinosolo": 28.0, "Centro Urbano-Hirigunea": 30.0, "Lamiako-Txopoeta": 16.0,
     "Negurigane-Peruri": 46.0, "Txorierri-Ondiz-Udondo": 23.0, "Mungia": 42.0, "Muskiz": 30.0,
@@ -224,7 +224,7 @@ botón_tasar = st.button("Calcular el precio de mercado", use_container_width=Tr
 if botón_tasar:
     with st.spinner("Procesando simulación a través de los ecosistemas del Stacking..."):
         try:
-            # 1. Construcción del DataFrame en crudo (Exactamente con las columnas informadas en el notebook)
+            # 1. Construcción del DataFrame en crudo (Exactamente con las 27 columnas originales esperadas)
             raw_entry = pd.DataFrame([{
                 'floor': int(floor_final),
                 'rooms': int(rooms),
