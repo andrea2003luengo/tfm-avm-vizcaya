@@ -5,7 +5,7 @@ joblib
 scikit-learn
 xgboost
 lightgbm
-category_encoders
+category_encoders==2.6.3
 optuna
 requests
 matplotlib
