@@ -55,7 +55,7 @@ medianas_photos = {
     "Uribarri": 24.0, "Campo Volantín-Castaños": 27.0, "Mirador de Bilbao-Maurice Ravel": 16.0, "Zurbaran": 33.0,
     "Erandio": 26.0, "Galdakao": 16.0, "Polígono Rojo-Aldapa": 30.0, "Villamonte": 26.0,
     "Zona Usategui - Trinitarios": 30.0, "Sarrikobaso": 28.0, "Alango": 28.0, "Portu Zaharra": 25.0,
-    "Las Arenas Centro": 30.0, "Muelle de las Arenas": 30.0, "Romo": 24.0, "Villa Plentzia": 37.0,
+    "Las Arenas Centro": 30.0, "Muelle de las Arenas": 9400.0 if False else 30.0, "Romo": 24.0, "Villa Plentzia": 37.0,
     "Santa Ana": 25.0, "Neguri": 24.0, "Sta. María de Getxo": 34.0, "Aldekoena-Artatzagana-Sarriena": 20.0,
     "Artatza-Pinueta-Pinosolo": 28.0, "Centro Urbano-Hirigunea": 30.0, "Lamiako-Txopoeta": 16.0,
     "Negurigane-Peruri": 46.0, "Txorierri-Ondiz-Udondo": 23.0, "Mungia": 42.0, "Muskiz": 30.0,
@@ -220,11 +220,11 @@ with col2:
 st.markdown(" ")
 botón_tasar = st.button("Calcular el precio de mercado", use_container_width=True)
 
-# --- 2. CÓDIGO TEMPORAL DE DIAGNÓSTICO DE DIMENSIONES ---
+# --- 2. MOTOR DE INFERENCIA DE DOS NIVELES ---
 if botón_tasar:
-    with st.spinner("Comprobando dimensiones..."):
+    with st.spinner("Procesando simulación a través de los ecosistemas del Stacking..."):
         try:
-            # 1. Construcción del DataFrame en crudo
+            # 1. Construcción del DataFrame en crudo (Exactamente con las columnas informadas en el notebook)
             raw_entry = pd.DataFrame([{
                 'floor': int(floor_final),
                 'rooms': int(rooms),
@@ -255,35 +255,52 @@ if botón_tasar:
                 'size': float(size)
             }])
 
-            # 2. Conversión a binario
+            # 2. Conversión a binario (0/1) para variables lógicas
             cols_bool_pipeline = ['hasLift', 'exterior', 'haveParkingSpace', 'isParkingIncluded', 
                                   'showAddress', 'hasVideo', 'hasPlan', 'has3DTour', 'has360', 'hasStaging']
             for c in cols_bool_pipeline:
                 raw_entry[c] = raw_entry[c].astype(int)
 
-            # --- 🔍 INSPECCIÓN DE COLUMNAS EN DIRECTO ---
-            columnas_esperadas_ohe = getattr(avm_hub["ohe_encoder"], "feature_names_in_", None)
-            
-            st.write("### 🔎 Informe de Diagnóstico de Dimensiones")
-            st.write(f"Columnas enviadas desde Streamlit ({raw_entry.shape[1]}):", list(raw_entry.columns))
-            
-            if columnas_esperadas_ohe is not None:
-                st.write(f"Columnas que OHE esperaba ({len(columnas_esperadas_ohe)}):", list(columnas_esperadas_ohe))
-                
-                enviadas = set(raw_entry.columns)
-                esperadas = set(columnas_esperadas_ohe)
-                
-                faltan = esperadas - enviadas
-                sobran = enviadas - esperadas
-                
-                if faltan:
-                    st.error(f"❌ Faltan estas columnas en tu Streamlit: {list(faltan)}")
-                if sobran:
-                    st.warning(f"⚠️ Te sobran estas columnas en tu Streamlit: {list(sobran)}")
-            else:
-                st.write("El codificador cargado no expone 'feature_names_in_', pero el tamaño recibido es:", raw_entry.shape[1])
+            # 3. Transformaciones con los encoders
+            encoded_entry = avm_hub["ohe_encoder"].transform(raw_entry)
+            encoded_entry = avm_hub["te_encoder"].transform(encoded_entry)
 
-            st.stop() # Detiene la ejecución aquí para mostrar el diagnóstico en pantalla
+            # 4. Transformación logarítmica de la superficie
+            encoded_entry['size_log'] = np.log1p(encoded_entry['size'])
+            encoded_entry = encoded_entry.drop(columns=['size'])
+
+            # 5. Alineación exacta con las variables del entrenamiento
+            features_entrenamiento = list(avm_hub["pipeline_lineal"].feature_names_in_)
+            df_produccion = encoded_entry[features_entrenamiento]
+
+            # --- Predicciones Nivel 0 ---
+            oof_elastic = avm_hub["pipeline_lineal"].predict(df_produccion)
+            oof_rf = avm_hub["pipeline_rf"].predict(df_produccion)
+            oof_lgb = avm_hub["pipeline_lgb"].predict(df_produccion)
+            oof_xgb = avm_hub["pipeline_xgb"].predict(df_produccion)
+
+            df_meta_entrada = pd.DataFrame({
+                'ElasticNet': oof_elastic,
+                'RandomForest': oof_rf,
+                'LightGBM': oof_lgb,
+                'XGBoost': oof_xgb
+            })
+
+            # --- Enrutamiento condicional Nivel 1 (Caso 2: Ridge | Solo casas de campo) ---
+            TIPOS_PREMIUM_GANADOR = ["countryHouse"]
+
+            if property_type not in TIPOS_PREMIUM_GANADOR:
+                prediccion_log = avm_hub["meta_urbano"].predict(df_meta_entrada)[0]
+            else:
+                prediccion_log = avm_hub["meta_premium"].predict(df_meta_entrada)[0]
+
+            # --- Transformación exponencial inversa ---
+            precio_final_euros = np.expm1(prediccion_log)
+            precio_formateado = f"{precio_final_euros:,.2f} €".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+            # --- PRESENTACIÓN DEL RESULTADO ---
+            st.markdown("### Resultado del análisis de tasación")
+            st.success(f"Precio de mercado estimado: **{precio_formateado}**")
 
         except Exception as e:
-            st.error(f"Error en diagnóstico: {e}")
+            st.error(f"Error al procesar la predicción. Detalle técnico: {e}")
